@@ -4,5 +4,6 @@ package main
 
 type room struct {
 	// 他のclientに転送するためのメッセージを保持するチャネル
-	forward chan byte[]
+	// メッセージを受け取ったら全てのclientに対してメッセージを送信する
+	forward chan []byte
 }
