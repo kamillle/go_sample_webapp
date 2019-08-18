@@ -17,6 +17,17 @@ type room struct {
 	clients map[*client]bool
 }
 
+// チャットルームを生成するメソッド
+// NOTE: room型への定義ではないので注意
+func newRoom() *room {
+	return &room{
+		forward: make(chan []byte),
+		join:    make(chan *client),
+		leave:   make(chan *client),
+		clients: make(map[*client]bool),
+	}
+}
+
 func (r *room) run() {
 	// ループ処理。強制終了しない限り回り続ける。
 	// goroutine(バックグラウンド)で実行するため、他の処理がブロックされることはない
