@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"net/http"
 	"path/filepath"
@@ -20,10 +21,18 @@ func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// ./chat/. でgo runを実行すること
 		t.templ = template.Must(template.ParseFiles(filepath.Join("templates", t.filename)))
 	})
+	// rを渡すことでテンプレート側でリクエスト情報を参照できるようにしている
 	t.templ.Execute(w, r) // t.templ.Executeの戻り地はチェックすべきらしい
 }
 
 func main() {
+	// flagパッケージはコマンドライン引数を扱えるようにする
+	// flag.String(<パラメータ名>, <デフォルト値>, <パラメータの説明>)
+	// flag.Stringは *string型(フラグの値が保持されているアドレス)を返すため、値自体を参照したい場合は `*` 関節演算子を利用する
+	var addr = flag.String("addr", ":8080", "アプリケーションのアドレス")
+	// flag.Parse() でコマンドラインのパラメータをパースし、変数への値の代入処理が行われる
+	flag.Parse()
+
 	room := newRoom()
 
 	// templateHnadler型のオブジェクトを生成して、そのアドレスを渡している
@@ -33,6 +42,8 @@ func main() {
 
 	// ループ処理の中でwebsocket通信を利用する
 	go room.run()
+
+	log.PrintIn("Webサーバーを開始します。ポート: ", *addr)
 
 	// start server
 	if err := http.ListenAndServe(":8080", nil); err != nil {
