@@ -2,6 +2,12 @@
 
 package main
 
+import (
+	"github.com/gorilla/websocket"
+	"log"
+	"net/http"
+)
+
 // clientsの在室を管理する clients map は直接操作しない
 // clientの入退出は必ず join と leave チャネルを使って管理する
 // clientsのmapを直接操作するとメモリの破壊等が起きる可能性がある
@@ -52,7 +58,7 @@ func (r *room) run() {
 					// メッセージ送信
 				default:
 					// メッセージ送信に失敗
-					delete(r.clients, clinet)
+					delete(r.clients, client)
 					close(client.send)
 				}
 			}
