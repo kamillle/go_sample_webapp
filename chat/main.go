@@ -43,7 +43,7 @@ func main() {
 	// ループ処理の中でwebsocket通信を利用する
 	go room.run()
 
-	log.PrintIn("Webサーバーを開始します。ポート: ", *addr)
+	log.Println("Webサーバーを開始します。ポート: ", *addr)
 
 	// start server
 	if err := http.ListenAndServe(":8080", nil); err != nil {
