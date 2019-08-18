@@ -53,3 +53,36 @@ const (
 	socketBufferSize  = 1024
 	messageBufferSize = 256
 )
+
+var upgrader = &websocket.Upgrader{ReadBufferSize: socketBufferSize, WriteBufferSize: socketBufferSize}
+
+// HTTPハンドラとしての機能を実装する
+//
+// websocketを利用するには、websocket.Upgrader型を利用し、HTTP通信をupgradeする必要がある
+//   ref: https://qiita.com/south37/items/6f92d4268fe676347160#1-%E3%82%B3%E3%83%8D%E3%82%AF%E3%82%B7%E3%83%A7%E3%83%B3%E7%A2%BA%E7%AB%8B
+//
+func (r *room) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	socket, err := upgrader.Upgrade(w, req, nil)
+
+	// websocketコネクションの確立に失敗したらreturnする
+	if err != nil {
+		log.Fatal("ServeHTTP:", err)
+		return
+	}
+
+	client := &client{
+		socket: socket,
+		send:   make(chan []byte, messageBufferSize),
+		room:   r,
+	}
+
+	// 生成したクライアントをroomに入れる
+	r.join <- client
+
+	// client.readがループなのでこのdeferはクライアントの退出時まで評価されない
+	// クライアントが終了を支持するまでこのdeferは遅延される
+	defer func() { r.leave <- client }()
+	// goroutineを立ち上げてスレッドによる並列処理を行う
+	go client.write()
+	client.read()
+}
