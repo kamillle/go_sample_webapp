@@ -17,6 +17,7 @@ type client struct {
 
 func (c *client) read() {
 	for {
+		// c.socket.ReadMessage(); の結果、errがnilであればtrue
 		if _, msg, err := c.socket.ReadMessage(); err == nil {
 			// <- は左辺のチャネルに右辺の値を送信する演算子
 			// = <- は右辺のチャネルから値を受信できる
@@ -31,6 +32,7 @@ func (c *client) read() {
 
 func (c *client) write() {
 	for msg := range c.send {
+		// c.socket.WriteMessage の結果、 errがnilであればtrue
 		if err := c.socket.WriteMessage(websocket.TextMessage, msg); err != nil {
 			break
 		}
