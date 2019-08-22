@@ -34,6 +34,7 @@ func newRoom() *room {
 		join:    make(chan *client),
 		leave:   make(chan *client),
 		clients: make(map[*client]bool),
+		tracer:  trace.Off(), // デフォルトではTracerによるロギングをしないように
 	}
 }
 

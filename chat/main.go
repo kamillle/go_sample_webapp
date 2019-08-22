@@ -2,10 +2,10 @@ package main
 
 import (
 	"flag"
-	"github.com/kamillle/go_sample_webapp/trace"
+	_ "github.com/kamillle/go_sample_webapp/trace"
 	"log"
 	"net/http"
-	"os"
+	_ "os"
 	"path/filepath"
 	"sync"
 	"text/template"
@@ -36,7 +36,8 @@ func main() {
 	flag.Parse()
 
 	room := newRoom()
-	room.tracer = trace.New(os.Stdout)
+	// コメントインするとロギングが行われる
+	// room.tracer = trace.New(os.Stdout)
 
 	// templateHnadler型のオブジェクトを生成して、そのアドレスを渡している
 	http.Handle("/", &templateHandler{filename: "chat.html"})
