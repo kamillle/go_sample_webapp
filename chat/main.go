@@ -2,13 +2,14 @@ package main
 
 import (
 	"flag"
-	_ "github.com/kamillle/go_sample_webapp/trace"
 	"log"
 	"net/http"
 	_ "os"
 	"path/filepath"
 	"sync"
 	"text/template"
+
+	_ "github.com/kamillle/go_sample_webapp/trace"
 )
 
 type templateHandler struct {

@@ -5,8 +5,10 @@ import (
 	"io"
 )
 
+// Tracer インターフェースの定義
 // 大文字にしておくことで外部アクセスが可能になる。小文字はプライベート
 type Tracer interface {
+	// Traceメソッドを持つことを宣言
 	Trace(...interface{})
 }
 
@@ -30,6 +32,7 @@ func (t *tracer) Trace(a ...interface{}) {
 
 type nilTracer struct{}
 
+// nilTracer型にどんな型の引数でも受け取れるTraceメソッドを生やす
 func (t *nilTracer) Trace(a ...interface{}) {}
 
 // OffはTraceメソッドの呼び出しを無視するTracerを返します。
