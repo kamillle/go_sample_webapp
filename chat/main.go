@@ -41,7 +41,7 @@ func main() {
 	// room.tracer = trace.New(os.Stdout)
 
 	// templateHnadler型のオブジェクトを生成して、そのアドレスを渡している
-	http.Handle("/", &templateHandler{filename: "chat.html"})
+	http.Handle("/chat", MustAuth(&templateHandler{filename: "chat.html"}))
 	// HTTPハンドラが実装されたroom型のオブジェクトを渡す
 	http.Handle("/room", room)
 
