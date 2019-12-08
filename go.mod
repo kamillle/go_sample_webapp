@@ -6,7 +6,7 @@ require (
 	github.com/clbanning/x2j v0.0.0-20191024224557-825249438eec // indirect
 	github.com/gorilla/websocket v1.4.1
 	github.com/stretchr/codecs v0.0.0-20170403063245-04a5b1e1910d // indirect
-	github.com/stretchr/gomniauth v0.0.0-20170717123514-4b6c822be2eb // indirect
+	github.com/stretchr/gomniauth v0.0.0-20170717123514-4b6c822be2eb
 	github.com/stretchr/goweb v0.0.0-20140611034857-d7518e7a1cf8 // indirect
 	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/stretchr/signature v0.0.0-20160104132143-168b2a1e1b56 // indirect

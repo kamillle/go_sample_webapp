@@ -4,12 +4,17 @@ import (
 	"flag"
 	"log"
 	"net/http"
+	"os"
 	_ "os"
 	"path/filepath"
 	"sync"
 	"text/template"
 
 	_ "github.com/kamillle/go_sample_webapp/trace"
+	"github.com/stretchr/gomniauth"
+	"github.com/stretchr/gomniauth/providers/facebook"
+	"github.com/stretchr/gomniauth/providers/github"
+	"github.com/stretchr/gomniauth/providers/google"
 )
 
 type templateHandler struct {
@@ -35,6 +40,15 @@ func main() {
 	var addr = flag.String("addr", ":8080", "アプリケーションのアドレス")
 	// flag.Parse() でコマンドラインのパラメータをパースし、変数への値の代入処理が行われる
 	flag.Parse()
+	// Gomniauthのセットアップ
+	// SetSecurityKey の引数はクライアント・サーバー間処理の進行状態管理の際に行われるデジタル署名用
+	// ここではランダムな値、または自分で決めた文字列でいい
+	gomniauth.SetSecurityKey("セキュリティキー")
+	gomniauth.WithProviders(
+		facebook.New("クライアントID", "秘密の値", "http://localhost:8080/auth/callback/facebook"),
+		github.New("クライアントID", "秘密の値", "http://localhost:8080/auth/callback/github"),
+		google.New(os.Getenv("GO_SAMPLE_WEBAPP_GOOGLE_CLIENT_ID"), os.Getenv("GO_SAMPLE_WEBAPP_GOOGLE_CLIENT_SECRET"), "http://localhost:8080/auth/callback/google"),
+	)
 
 	room := newRoom()
 	// コメントインするとロギングが行われる
