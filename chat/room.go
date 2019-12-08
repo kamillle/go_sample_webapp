@@ -3,10 +3,12 @@
 package main
 
 import (
-	"github.com/gorilla/websocket"
-	"github.com/kamillle/go_sample_webapp/trace"
 	"log"
 	"net/http"
+
+	"github.com/gorilla/websocket"
+	"github.com/kamillle/go_sample_webapp/trace"
+	"github.com/stretchr/objx"
 )
 
 // clientsの在室を管理する clients map は直接操作しない
@@ -15,7 +17,10 @@ import (
 type room struct {
 	// 他のclientに転送するためのメッセージを保持するチャネル
 	// メッセージを受け取ったら全てのclientに対してメッセージを送信する
-	forward chan []byte
+	//
+	// chan []byte を使ってbyteを送受信していたが、送信者や送信時間なども送受信に加えるために
+	// 独自定義の*message型を指定する
+	forward chan *message
 	// ルーム(clients)に参加するためのチャネル
 	join chan *client
 	// ルーム(clients)から退室するためのチャネル
@@ -30,7 +35,7 @@ type room struct {
 // NOTE: room型への定義ではないので注意
 func newRoom() *room {
 	return &room{
-		forward: make(chan []byte),
+		forward: make(chan *message),
 		join:    make(chan *client),
 		leave:   make(chan *client),
 		clients: make(map[*client]bool),
@@ -57,6 +62,7 @@ func (r *room) run() {
 			close(client.send)
 			r.tracer.Trace("クライアントが退室しました")
 		case msg := <-r.forward:
+			r.tracer.Trace("メッセージを受信しました: ", msg.Message)
 			// 全てのclient(r.clients)にメッセージを送信する
 			for client := range r.clients {
 				select {
@@ -95,10 +101,18 @@ func (r *room) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	// cookieに入っているユーザー情報を取得したいので
+	authCookie, err := req.Cookie("auth")
+	if err != nil {
+		log.Fatal("クッキーの取得に失敗しました", err)
+		return
+	}
+
 	client := &client{
-		socket: socket,
-		send:   make(chan []byte, messageBufferSize),
-		room:   r,
+		socket:   socket,
+		send:     make(chan *message, messageBufferSize),
+		room:     r,
+		userData: objx.MustFromBase64(authCookie.Value),
 	}
 
 	// 生成したクライアントをroomに入れる
