@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/stretchr/gomniauth"
+	"github.com/stretchr/objx"
 )
 
 type authHandler struct {
@@ -49,6 +50,36 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			log.Fatalln("GetBeginAuthURLの呼び出し中にエラーが発生しました:", provider, "-", err)
 		}
 		w.Header().Set("Location", loginUrl)
+		w.WriteHeader(http.StatusTemporaryRedirect)
+	case "callback":
+		provider, err := gomniauth.Provider(provider)
+		if err != nil {
+			log.Fatalln("認証プロバイダーの取得に失敗しました", provider, "-", err)
+		}
+
+		// r.URLには今のGETリクエストの情報が入っている
+		// 更にRawQueryを実行することでクエリパラメータを取得できる
+		//
+		// creds にはアクセストークンやそのスコープが入っている
+		creds, err := provider.CompleteAuth(objx.MustFromURLQuery(r.URL.RawQuery))
+		if err != nil {
+			log.Fatalln("認証を完了できませんでした", provider, "-", err)
+		}
+
+		// GetUserでユーザー情報を取得する
+		user, err := provider.GetUser(creds)
+		if err != nil {
+			log.Fatalln("ユーザーの取得に失敗しました", provider, "- ", err)
+		}
+
+		authCookieValue := objx.New(map[string]interface{}{
+			"name": user.Name(),
+		}).MustBase64()
+		http.SetCookie(w, &http.Cookie{
+			Name:  "auth",
+			Value: authCookieValue,
+			Path:  "/"})
+		w.Header()["Location"] = []string{"/chat"}
 		w.WriteHeader(http.StatusTemporaryRedirect)
 	default:
 		w.WriteHeader(http.StatusNotFound)
